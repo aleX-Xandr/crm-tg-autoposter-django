@@ -1,0 +1,170 @@
+{% extends "adminpanel/base.html" %}
+
+{% block sideMenu %}
+                
+{% endblock sideMenu %}
+
+{% block data %} 
+    <style type="text/css">
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            border: 1px solid #000
+        }
+        th, td {
+            border: 1px solid #000;
+            text-align: center;
+            padding: 8px
+        }
+        th {
+            background-color: #f2f2f2
+        }
+        button:focus{
+            outline: none;
+        }
+        .container-fluid {
+            margin-bottom: 100px;
+        }
+        .spanBtn {
+            color: #ffffff;
+            border-radius: 17px;
+            background: #9dd5ff;
+            padding: 9px 8px 8px 9px;
+            transition: .3s;
+        }
+        .adaptive-flex {
+            display: flex;
+            flex-direction: row;
+        }
+
+        .adaptive-flex div {
+            text-align: center;
+            margin: 20px auto;
+        }
+        .spanBtn:hover{
+            -webkit-box-shadow: 0px 6px 31px 0px rgba(186,186,186,1);
+            -moz-box-shadow: 0px 6px 31px 0px rgba(186,186,186,1);
+            box-shadow: 0px 6px 31px 0px rgba(186,186,186,1);
+            transform: scale(1.05);
+            background: #2c8cd5;
+        }
+        #submit {
+            border: none;
+            color: #ffffff;
+            font-weight: 700;
+            border-radius: 13px
+        }
+        /* Медиа-запрос для экранов с шириной меньше 600px */
+        @media (max-width: 600px) {
+            /* Скрываем заголовки таблицы */
+            th {
+                display: none;
+            }
+            /* Сбрасываем размеры и отображение таблицы */
+            table, tbody, tr, td {
+                display: block;
+                width: 100%;
+            }
+            /* Делаем ячейки похожими на блоки для удобного чтения на мобильных устройствах */
+            td {
+                display: flex;
+                justify-content: center;
+                align-items: flex-start;
+                flex-direction: column;
+            }
+            /* Добавляем метку к каждой ячейке на основе скрытого заголовка */
+            td::before {
+                content: attr(data-label);
+                font-weight: bold;
+                margin-bottom: 8px;
+                text-align: left;
+            }
+        }
+    </style>
+    <table>
+        <thead>
+            <tr>
+                <th>Id</th>
+                <th>Назва групи</th>
+                <th>Працює</th>
+                <th>Тип</th>
+                <th>Посилання</th>
+                <th>Коментар</th>
+            </tr>
+        </thead>
+        <tbody>
+            
+            <tr>
+                <td data-label="Id">{{ channel.Id }}</td>
+                <td data-label="Назва групи">{{ channel.Group_Name }}</td>
+                <td data-label="Працює">
+                    {% if channel.Work %}
+                        Працює
+                    {% else %}
+                        Не працює
+                    {% endif %}
+                </td>
+                <td data-label="Тип">
+                    {% if channel.Type == "Channel" %}
+                        Канал
+                    {% else %}
+                        Чат
+                    {% endif %}
+                </td>
+                <td data-label="Посилання"><a href="{{ channel.Invite_link }}">Клiк</a></td>
+                <td data-label="Коментар">{{ channel.flags }}</td>
+            </tr>
+
+        </tbody>
+    </table>
+
+
+    <!-- <form id="siteForm" class="siteForm" style="display: block;">
+        <div>
+            <input type="text" id="autoPublicateNews" class="disabled" value="{{ channel.IsAutoPosted }}">
+        </div>
+        <div>Автопостинг</div>
+        <div>
+            {% if channel.IsAutoPosted %}
+                <button type="submit" id="submit" style="margin-top: 0px; background: #33cc10">Стан: Вкл.</button>
+            {% else %}
+                <button type="submit" id="submit" style="margin-top: 0px; background: #d43d26">Стан: Викл.</button>
+            {% endif %}
+        </div>
+    </form> -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        $(document).ready(function(){
+            $("#siteForm").on("submit", function(event){
+                event.preventDefault();
+                var flag = $("#autoPublicateNews").val();
+                var id = "{{ channel.Id }}";
+
+                $.ajax({
+                    url: "/panel/edit_channel/",
+                    type: "GET",
+                    data: {id, flag},
+                    headers: { "X-CSRFToken": getCookie("csrftoken") },
+                    success: function(data, textStatus, jqXHR) {
+                        alert("Запит на редагування надіслано успішно!");
+                        $("#submit").css("background", ($("#autoPublicateNews").val() == "True")?"#d43d26":"#33cc10");
+                        $("#submit").html(($("#autoPublicateNews").val() == "True")?"Стан: Викл.":"Стан: Вкл.");
+                        $("#autoPublicateNews").val(($("#autoPublicateNews").val() == "True")?"False":"True");
+                    },
+
+                    error: function(jqXHR, textStatus, errorThrown) {
+                        alert("Запит на редагування надіслано з помилкою!");
+                        location.reload();
+                    },
+
+                    complete: function(jqXHR, textStatus) {
+                        console.log(jqXHR.status);
+                    }
+                })
+
+                
+            });
+        });
+
+    </script>
+{% endblock data %}

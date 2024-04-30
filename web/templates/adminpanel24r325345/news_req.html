@@ -1,0 +1,22 @@
+{% for newsletter in news  %}
+        <li class="product-wrapper">
+            <a href="{% url 'panel:newsletter' %}?id={{ newsletter.id }}" class="product">
+                {% if "http" in newsletter.photo %}
+                <div class="product-photo">
+                    <img src="{{ newsletter.photo }}" loading="lazy" alt="">
+                </div>
+                {% else %}
+                <div class="product-photo">
+                    <img src="/static/img/img.png" loading="lazy" alt="">
+                </div>
+                {% endif %}
+                <div class="timestamp">
+                    {{ newsletter.time }}
+                </div>
+                <p>
+                    <b>{{ newsletter.source }}</b><br><br>
+                    {{ newsletter.text|slice:":300" }}
+                </p>
+            </a>
+        </li>
+{% endfor %}

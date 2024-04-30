@@ -1,0 +1,15 @@
+{% extends "registration/base.html" %}
+
+{% load i18n %}
+
+{% block content %}
+<div class="text-center mb-5">
+    <h1 class="h4 text-gray-900">
+        {{ error_description }}
+    </h1>
+</div>
+<div class="text-center">
+    <a href="{% url 'panel:dashboard' %}">{{ move_to_home_page_text }}</a>
+</div>
+{% endblock %}
+

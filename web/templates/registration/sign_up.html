@@ -1,0 +1,34 @@
+{% extends "registration/base.html" %}
+
+{% block content %}
+
+<div class="text-center mb-5">
+    <h1 class="h4 text-gray-900">Реєстрація</h1>
+    <div class="text-center">
+        {% if error != '' %}
+            <span>{{error}}</span>
+        {% endif %}
+    </div>
+</div>
+<div class="msg-result"></div>
+<form class="user" method="post" action="{% url 'accounts:sign_up' %}">
+    {% csrf_token %}
+    
+    <div class="form-group">
+        <input type="text" name="username" class="form-control form-control-user" placeholder="Логін" value="{{ username}}" required>
+    </div>
+    <div class="form-group">
+        <input type="password" name="password1" class="form-control form-control-user" placeholder="Пароль" required>
+    </div>
+    <div class="form-group">
+        <input type="password" name="password2" class="form-control form-control-user" placeholder="Ще раз пароль" required>
+    </div>
+    <button class="btn btn-primary btn-user btn-block" id="btn_login">Зареєструватись</button>
+</form>
+<hr>
+<div class="text-center">
+    <a href="{% url 'accounts:login' %}">
+        В мене є обліковий запис
+    </a>
+</div>
+{% endblock %}

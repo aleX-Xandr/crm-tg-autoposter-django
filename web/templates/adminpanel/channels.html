@@ -1,0 +1,103 @@
+{% extends "adminpanel/base.html" %}
+
+{% block sideMenu %}
+    <li class="nav-item my-2">
+        <div class="nav-link" id="addForm">
+            <span class="nav-action-btn">➕ Додати канал ➕</span>
+        </div>
+    </li>
+    <li class="nav-item my-2">
+        <div class="nav-link" id="deleteForm">
+            <span class="nav-action-btn">➖ Видалити канал ➖</span>
+        </div>
+    </li>
+    {% for i, channel in enumerated_channels %}
+        <li class="nav-item my-2">
+            <a class="nav-link" href="{% url 'panel:channel' %}?id={{ channel.Id }}">
+                <span>{{ i }}. {{ channel.Group_Name }}</span>
+            </a>
+        </li>
+    {% endfor %}
+{% endblock sideMenu %}
+
+{% block data %} 
+    <form id="siteForm" class="siteForm">
+        <div>
+            <input type="text" id="type_field" class="disabled" value="channel">
+        </div>
+        <div>
+            <input type="text" id="text_field" required placeholder="Введіть посилання на канал">
+        </div>
+        <div style="margin-top: 10px;">
+            <input type="text" id="flag_field" placeholder="Введіть примiтку до каналу">
+        </div>
+        <div>
+            <button type="submit" id="submit"></button>
+        </div>
+        <div>
+            <input type="text" id="method_field" class="disabled" value="">
+        </div>
+    </form>
+    
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        $(document).ready(function(){
+            $("#siteForm").on("submit", function(event){
+                event.preventDefault();
+                let data = $("#text_field").val();
+                let type = $("#type_field").val();
+                let flags = $("#flag_field").val();
+                let method = $("#method_field").val();
+                let human_text;
+                if (method == "add") {
+                    human_text = "додано";
+                } else {
+                    human_text = "видалено";
+                }
+
+                $.ajax({
+                    url: "/panel/"+method+"_data/",
+                    type: "POST",
+                    data: {data, type, flags},
+                    headers: { "X-CSRFToken": getCookie("csrftoken") },
+                    success: function(data, textStatus, jqXHR) {
+                        alert("Посилання " + human_text + " успішно!");
+                    },
+
+                    error: function(jqXHR, textStatus, errorThrown) {
+                        switch (jqXHR.status) {
+                            case 500:
+                                alert("Вже було " + human_text + "!");
+                                break;
+                            default:
+                                alert("Error: " + textStatus + " " + errorThrown);
+                                break;
+                        }
+                    },
+
+                    complete: function(jqXHR, textStatus) {
+                        console.log(jqXHR.status);
+                        location.reload();
+                    }
+                })
+            });
+            $("#addForm").click(function(){
+                $("#submit").html("Додати");
+                $("#text_field").val("");
+                $("#flag_field").css("display", "block");
+                $("#method_field").val("add");
+                $("#siteForm").css("display", "block");
+            });
+            $("#deleteForm").click(function(){
+                $("#submit").html("Видалити");
+                $("#text_field").val("");
+                $("#flag_field").css("display", "none");
+                $("#method_field").val("delete");
+                $("#siteForm").css("display", "block");
+            });
+        });
+    </script>
+
+
+
+{% endblock data %}

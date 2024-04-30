@@ -1,0 +1,601 @@
+{% extends "adminpanel/base.html" %}
+
+{% block sideMenu %}    
+
+    {% for category in categories %}
+                <li class="nav-item my-2">
+                    <a class="nav-link" href="{% url 'panel:news' %}?category={{ category.channel }}">
+                        <span>{{ category.channel }}</span>
+                    </a>
+                </li>
+    {% endfor %}
+
+{% endblock sideMenu %}
+
+{% block data %} 
+    <style type="text/css">
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            border: 1px solid #000;
+        }
+        th, td {
+            border: 1px solid #000;
+            text-align: center;
+            padding: 8px
+        }
+        th {
+            background-color: #f2f2f2
+        }
+        .container-fluid {
+            margin-bottom: 100px;
+        }
+        .spanBtn {
+            color: #ffffff;
+            border-radius: 17px;
+            background: #9dd5ff;
+            padding: 9px 8px 8px 9px;
+            transition: .3s;
+        }
+        .adaptive-flex {
+            display: flex;
+            flex-direction: row;
+        }
+
+        .adaptive-flex div {
+            text-align: center;
+            margin: 20px auto;
+        }
+        .spanBtn:hover{
+            -webkit-box-shadow: 0px 6px 31px 0px rgba(186,186,186,1);
+            -moz-box-shadow: 0px 6px 31px 0px rgba(186,186,186,1);
+            box-shadow: 0px 6px 31px 0px rgba(186,186,186,1);
+            transform: scale(1.05);
+            background: #2c8cd5;
+        }
+
+        @media (max-width: 1100px) {
+            .adaptive-flex {
+                flex-direction: column;
+            }
+        }
+        @media (max-width: 600px) {
+
+            th {
+                display: none;
+            }
+            table, tbody, tr, td {
+                display: block;
+                width: 100%;
+            }
+            td {
+                display: flex;
+                justify-content: center;
+                align-items: flex-start;
+                flex-direction: column;
+            }
+            td::before {
+                content: attr(data-label);
+                font-weight: bold;
+                margin-bottom: 8px;
+                text-align: left;
+            }
+        }
+    </style>
+    <table>
+        <thead>
+            <tr>
+                <th>chat id/url</th>
+                <th>Текст</th>
+                <th>Джерело</th>
+                <th>Кількість фото (tg)</th>
+                <th>Фото url</th>
+                <th>Час додавання</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td class="id-table" data-label="chat id/url">
+                {% if "http" in newsletter.chat_id %}
+                    <a href="{{ newsletter.chat_id }}" target="_blank">Клiк</a>
+                {% else %}
+                    {{ newsletter.chat_id }}
+                {% endif %}
+                </td>
+                <td class="text-table" data-label="Текст">{{ newsletter.text }}</td>
+                <td class="source-table" data-label="Джерело">{{ newsletter.source }}</td>
+                <td class="tg-table" data-label="Кількість фото (tg)">
+                    {{ photo_amount }}
+                </td>
+                <td class="url-table" data-label="Фото url">{% if newsletter.photo != "None" %}
+                        <a href="{{ newsletter.photo }}">Клiк</a>
+                    {% else %}
+                        вiдсутнiй
+                    {% endif %}</td>
+                <td  class="time-table" data-label="Час додавання">{{ newsletter.time }}</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <div>
+        <input type="text" id="post_id" class="disabled" value="{{ newsletter.id }}">
+    </div>
+    <div class="adaptive-flex">
+        <div id="publicateNews">
+            <span class="spanBtn">Опублікувати новину</span>
+        </div>
+        <div id="PostponeNews">
+            <span class="spanBtn">Відкласти новину</span>
+        </div>
+        <div id="editNews">
+            <span class="spanBtn">Відредагувати текст</span>
+        </div>
+        <div id="editMedia">
+            <span class="spanBtn">Відредагувати медiа</span>
+        </div>
+        <div id="deleteNews">
+            <span class="spanBtn">Видалити пост</span>
+        </div>
+    </div>
+        
+
+
+    <form id="siteForm" class="siteForm">
+        <div>
+            <div class="flex-editor">
+                <div id="bold" style="font-weight: bold;">B</div>
+                <div id="italic" style="font-style: italic;">I</div>
+                <div id="underline" style="text-decoration: underline;">U</div>
+                <div id="strike" style="text-decoration: line-through;">S</div>
+                <div id="link" style="text-decoration: underline;">L</div>
+            </div>
+        </div>
+        <div>
+            <textarea id="textarea_field" rows="4" cols="50" style="max-width: 100%">{{ newsletter.text }}</textarea>
+        </div>
+        <div>
+            <div class="flex-editor">
+                <button type="submit">Відредагувати</button>
+                <button id="cancel">Скасувати</button>
+                
+            </div>
+        </div>
+    </form>
+
+
+    <form id="PostponeForm" class="siteForm">
+        <div>
+            <label for="postponetime">Виберіть дату і час, після якого буде надіслано пост:</label>
+            <input type="datetime-local" id="postponetime" name="postponetime">
+        </div>
+        <div>
+            <div class="flex-editor">
+                <button type="submit">Відкласти</button>
+                <button id="cancel2">Скасувати</button>
+                
+            </div>
+        </div>
+    </form>
+
+    <form id="MediaForm" class="siteForm">
+        <div id="mediaContainer">
+        {% for media in media_array %}
+            <div class="flex-editor image">
+                <span><a href="http://134.209.195.23:8000/{{ media }}" target="_blank">{{ media }}</a></span><span class="delete">✖️</span>
+            </div>
+        {% endfor %}
+        </div>
+        <div>
+            <label for="files">Виберіть файли якi треба додати до публікації:</label>
+            <input type="file" id="files" name="files" multiple>
+        </div>
+        <div>
+            <div class="flex-editor">
+                <button type="submit">Зберегти</button>
+                <button id="cancel3">Скасувати</button>
+            </div>
+        </div>
+    </form>
+
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        $(document).ready(function(){
+
+            let format_text = (tag) => {
+                let control = $('#textarea_field')[0];
+                let text = $(control).val();
+                if (control.selectionStart != control.selectionEnd) {
+                    let firstTag;
+                    if (tag == "a") {
+                        firstTag = `<${tag} href="ПОСИЛАННЯ">`;
+                    } else {
+                        firstTag = `<${tag}>`;
+                    }
+                    let secondTag = `</${tag}>`;
+                    let first_part = text.substring(0, control.selectionStart);
+                    let selected_part = text.substring(control.selectionStart, control.selectionEnd);
+                    let last_part = text.substring(control.selectionEnd, text.length);
+                    if (first_part.endsWith(firstTag) && last_part.startsWith(secondTag)) {
+                        first_part = text.substring(0, control.selectionStart - firstTag.length);
+                        last_part = text.substring(control.selectionEnd + secondTag.length, text.length);
+                        $('#textarea_field').val(`${first_part}${selected_part}${last_part}`);
+                    } else if (selected_part.startsWith(firstTag) && selected_part.endsWith(secondTag)) {
+                        selected_part = text.substring(control.selectionStart + firstTag.length, control.selectionEnd - secondTag.length);
+                        $('#textarea_field').val(`${first_part}${selected_part}${last_part}`);
+                    } else {
+                        $('#textarea_field').val(`${first_part}${firstTag}${selected_part}${secondTag}${last_part}`);
+                    }
+                }
+            }
+
+            $("#mediaContainer").on("click", ".flex-editor.image .delete", function() {
+                $(this).closest(".flex-editor.image").remove();
+            });
+
+            $('#bold').click(function(){
+                format_text("b")
+            });
+
+            $('#italic').click(function(){
+                format_text("i")
+            });
+
+            $('#underline').click(function(){
+                format_text("u")
+            });
+
+            $('#strike').click(function(){
+                format_text("s")
+            });
+
+            $('#link').click(function(){
+                format_text("a")
+            });
+
+            $("#editNews").click(function(){
+                $("#PostponeForm").css("display", "none");
+                $("#MediaForm").css("display", "none");
+                $("#siteForm").css("display", "block");
+            });
+
+            $("#editMedia").click(function(){
+                $("#PostponeForm").css("display", "none");
+                $("#siteForm").css("display", "none");
+                $("#MediaForm").css("display", "block");
+            });
+
+            $("#PostponeNews").click(function(){
+                $("#siteForm").css("display", "none");
+                $("#MediaForm").css("display", "none");
+                $("#PostponeForm").css("display", "block");
+            });
+
+            $("#cancel").click(function(){
+                event.preventDefault();
+                $("#siteForm").css("display", "none");
+                $('#textarea_field').val($(".text-table").html());
+            });
+
+            $("#cancel2").click(function(){
+                event.preventDefault();
+                $("#PostponeForm").css("display", "none");
+            });
+
+            $("#cancel3").click(function(){
+                event.preventDefault();
+                $("#MediaForm").css("display", "none");
+            });
+
+
+            $("#PostponeForm").on("submit", function(event){
+                event.preventDefault();
+                let datetime = $("#postponetime").val();
+                let id = $("#post_id").val();
+
+                $.ajax({
+                    url: "/panel/post/",
+                    type: "POST",
+                    data: JSON.stringify({id, datetime}), 
+                    contentType: "application/json",
+                    headers: { "X-CSRFToken": getCookie("csrftoken") },
+                    success: function(data, textStatus, jqXHR) {
+                        alert("Запит на публікацію надіслано успішно!");
+                    },
+
+                    error: function(jqXHR, textStatus, errorThrown) {
+                        alert("Запит на публікацію надіслано з помилкою!");
+                    },
+
+                    complete: function(jqXHR, textStatus) {
+                        console.log(jqXHR.status);
+                    }
+                })
+            });
+
+            $("#siteForm").on("submit", function(event){
+                event.preventDefault();
+                let text = $("#textarea_field").val();
+                let id = $("#post_id").val();
+
+                $.ajax({
+                    url: "/panel/update_post/",
+                    type: "POST",
+                    data: {id, text},
+                    headers: { "X-CSRFToken": getCookie("csrftoken") },
+                    success: function(data, textStatus, jqXHR) {
+                        alert("Запит на редагування надіслано успішно!");
+                    },
+
+                    error: function(jqXHR, textStatus, errorThrown) {
+                        alert("Запит на редагування надіслано з помилкою!");
+                    },
+
+                    complete: function(jqXHR, textStatus) {
+                        console.log(jqXHR.status);
+                        location.reload();
+                    }
+                })
+            });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+            $("#MediaForm").on("submit", function(event){
+                event.preventDefault();
+                var remainingLinks = [];
+                $("div.flex-editor.image").each(function() {
+                    var link = $(this).find("span a").attr("href").replace("http://134.209.195.23:8000/", "");
+                    remainingLinks.push(link);
+                });
+
+                var files = $("#files")[0].files; // Get selected files
+
+                let id = $("#post_id").val();
+
+                // Create a FormData object to store the files
+                console.log(files); // Check the content of the 'files' array.
+                console.log(remainingLinks); // Check the value of 'remainingLinks'.
+                console.log(id); // Check the value of 'id'.
+
+                var formData = new FormData();
+
+                for (var i = 0; i < files.length; i++) {
+                    formData.append("files[]", files[i]);
+                }
+                formData.append("remainingLinks", JSON.stringify(remainingLinks));
+                formData.append("post_id", id);
+
+                console.log(formData);
+                // Send an AJAX request to the server
+                $.ajax({
+                    url: '/panel/upload/', 
+                    type: 'POST',
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                    headers: { "X-CSRFToken": getCookie("csrftoken") },
+                    success: function(data, textStatus, jqXHR) {
+                        alert("Запит на редагування надіслано успішно!");
+                    },
+
+                    error: function(jqXHR, textStatus, errorThrown) {
+                        alert("Запит на редагування надіслано з помилкою!");
+                    },
+
+                    complete: function(jqXHR, textStatus) {
+                        console.log(jqXHR.status);
+                        location.reload();
+                    }
+                });
+            // });
+            // event.preventDefault();
+
+            //     var remainingLinks = [];
+            //     $("div.flex-editor.image").each(function() {
+            //         var link = $(this).find("span a").attr("href");
+            //         remainingLinks.push(link);
+            //     });
+
+            //     // Получить выбранные файлы
+            //     var files = $("#files")[0].files;
+
+            //     // Создать объект FormData для отправки файлов
+            //     var formData = new FormData();
+            //     formData.append("remainingLinks", JSON.stringify(remainingLinks));
+
+            //     // Добавить файлы к объекту FormData
+            //     for (var i = 0; i < files.length; i++) {
+            //         formData.append("files", files[i]);
+            //     }
+
+            //     $.ajax({
+            //         url: "/panel/upload/",
+            //         type: "POST",
+            //         data: formData,
+            //         contentType: false,
+            //         processData: false,
+            //         headers: { "X-CSRFToken": getCookie("csrftoken") },
+            //         success: function(data, textStatus, jqXHR) {
+            //             alert("Запрос на публикацию отправлен успешно!");
+            //         },
+            //         error: function(jqXHR, textStatus, errorThrown) {
+            //             alert("Запрос на публикацию отправлен с ошибкой!");
+            //         },
+            //         complete: function(jqXHR, textStatus) {
+            //             console.log(jqXHR.status);
+            //         }
+            //     });
+
+                // Отправить запрос Ajax
+                // $.ajax({
+                //     url: "/panel/post/",
+                //     type: "POST",
+                //     data: formData,
+                //     contentType: false,
+                //     processData: false,
+                //     headers: { "X-CSRFToken": getCookie("csrftoken") },
+                //     success: function(data, textStatus, jqXHR) {
+                //         alert("Запит на редагування надіслано успішно!");
+                //     },
+
+                //     error: function(jqXHR, textStatus, errorThrown) {
+                //         alert("Запит на редагування надіслано з помилкою!");
+                //     },
+                //     complete: function(jqXHR, textStatus) {
+                //         console.log(jqXHR.status);
+                //     }
+                // });
+
+
+
+
+                // var remainingLinks = [];
+                // $("div.flex-editor.image").each(function() {
+                //     var link = $(this).find("span a").attr("href");
+                //     remainingLinks.push(link);
+                // });
+                
+                // // Теперь массив remainingLinks содержит все оставшиеся ссылки
+                // console.log(remainingLinks);
+                // let text = $("#textarea_field").val();
+                // let id = $("#post_id").val();
+
+                // $.ajax({
+                //     url: "/panel/update_post/",
+                //     type: "POST",
+                //     data: {id, text},
+                //     headers: { "X-CSRFToken": getCookie("csrftoken") },
+                //     success: function(data, textStatus, jqXHR) {
+                //         alert("Запит на редагування надіслано успішно!");
+                //     },
+
+                //     error: function(jqXHR, textStatus, errorThrown) {
+                //         alert("Запит на редагування надіслано з помилкою!");
+                //     },
+
+                //     complete: function(jqXHR, textStatus) {
+                //         console.log(jqXHR.status);
+                //         location.reload();
+                //     }
+                // })
+            });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+            $("#publicateNews").click(function(){
+                let datetime = "now"
+                let id = $("#post_id").val();
+
+                $.ajax({
+                    url: "/panel/post/",
+                    type: "POST",
+                    data: JSON.stringify({id, datetime}), 
+                    contentType: "application/json",
+                    headers: { "X-CSRFToken": getCookie("csrftoken") },
+                    success: function(data, textStatus, jqXHR) {
+                        alert("Запит на публікацію надіслано успішно!");
+                    },
+
+                    error: function(jqXHR, textStatus, errorThrown) {
+                        alert("Запит на публікацію надіслано з помилкою!");
+                    },
+
+                    complete: function(jqXHR, textStatus) {
+                        console.log(jqXHR.status);
+                    }
+                })
+            });
+
+            $("#deleteNews").click(function(){
+                let id = $("#post_id").val();
+
+                $.ajax({
+                    url: "/panel/delete_post/",
+                    type: "POST",
+                    data: {id}, 
+                    headers: { "X-CSRFToken": getCookie("csrftoken") },
+                    success: function(data, textStatus, jqXHR) {
+                        alert("Запит на видалення надіслано успішно!");
+                        window.location.href = "{% url 'panel:news' %}";
+
+                    },
+
+                    error: function(jqXHR, textStatus, errorThrown) {
+                        alert("Запит на видалення надіслано з помилкою!");
+                    },
+
+                    complete: function(jqXHR, textStatus) {
+                        console.log(jqXHR.status);
+                    }
+                })
+            });
+        });
+    </script>
+{% endblock data %}

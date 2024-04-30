@@ -1,0 +1,666 @@
+{% extends "adminpanel/base.html" %}
+
+{% block filters %}
+                <li class="nav-item my-2">
+                    <div class="nav-link">
+                        <label class="container" style="margin: 0;">
+                            {% if sorting == "true" %}
+                        <input class="checkbox" type="checkbox" data-id="views-sort" checked="checked">
+                            {% else %}
+                        <input class="checkbox" type="checkbox" data-id="views-sort">
+                            {% endif %}
+                        <span class="checkmark"  style="margin: 0;"></span>
+                        </label>
+                        <span style="margin-left: 28px;">Сортувати за переглядами</span>
+                    </div>
+                </li>
+
+                <li class="nav-item my-2">
+                    <form id="sortForm" class="siteForm" style="display: block;">
+                        <div>
+                            <input type="text" name="keyword" id="keyword" placeholder="Слово або фраза" value="{{ keyword }}">
+                        </div>
+                        <div class="date-container">
+                            <input type="datetime-local" name="dateFrom" id="dateFrom">
+                        </div>
+                        <div class="date-container">
+                            <input type="datetime-local" name="dateTo" id="dateTo">
+                        </div>
+                        <div class="selector">
+                            <input class="source-selector" type="radio" id="source1" name="source" data-source="all" {% if source == "all" or not source %} checked {% endif %}>
+                            <label for="source1">Усi</label>
+                          
+                            <input class="source-selector" type="radio" id="source2" name="source" data-source="onlyTg" {% if source == "onlyTg" %} checked {% endif %}>
+                            <label for="source2">Тгк</label>
+                          
+                            <input class="source-selector" type="radio" id="source3" name="source" data-source="onlyWeb" {% if source == "onlyWeb" %} checked {% endif %}>
+                            <label for="source3">Веб</label>
+                        </div>
+                        <div>
+                            <button type="submit" id="submit">Пошук</button>
+                        </div>
+                    </form>
+                    <form id="downloadSortForm" class="siteForm" style="display: block;">
+                        <div>
+                            <button type="submit" id="submit">Завантажити xlsx</button>
+                        </div>
+                    </form>
+                </li>
+{% endblock filters %}
+
+{% block sideMenu %}    
+
+    {% for category in categories %}
+                <li class="nav-item my-2">
+                    <a class="nav-link" href="{% url 'panel:news' %}?category={{ category.channel }}">
+                        <label class="container" style="margin: 0;">
+                            {% if category.channel in category_list %}
+                          <input class="checkbox" type="checkbox" data-id="{{ category.channel }}" checked="checked">
+                            {% else %}
+                          <input class="checkbox" type="checkbox" data-id="{{ category.channel }}">
+                            {% endif %}
+                          <span class="checkmark"  style="margin: 0;"></span>
+                        </label>
+                        <span style="margin-left: 28px;">{{ category.channel }}</span>
+                    </a>
+                </li>
+    {% endfor %}
+                
+{% endblock sideMenu %}
+
+
+{% block pages %}
+    <div class="pagination-buttons">
+        {% if page.has_previous %}
+            <a href="?page=1">&lt;&lt;</a>
+            <a href="?page={{ page.previous_page_number }}">&lt;</a>
+        {% endif %}
+
+        <span>{{ page.number }}/{{ page.paginator.num_pages }}</span>
+
+        {% if page.has_next %}
+            <a href="?page={{ page.next_page_number }}">&gt;</a>
+            <a href="?page={{ page.paginator.num_pages }}">&gt;&gt;</a>
+        {% endif %}
+
+    </div>
+{% endblock pages %}
+
+{% block pages_bottom %}
+    <div class="pagination-buttons">
+        {% if page.has_previous %}
+            <a href="?page=1">&lt;&lt;</a>
+            <a href="?page={{ page.previous_page_number }}">&lt;</a>
+        {% endif %}
+
+        <span>{{ page.number }}/{{ page.paginator.num_pages }}</span>
+
+        {% if page.has_next %}
+            <a href="?page={{ page.next_page_number }}">&gt;</a>
+            <a href="?page={{ page.paginator.num_pages }}">&gt;&gt;</a>
+        {% endif %}
+
+    </div>
+{% endblock pages_bottom %}
+
+{% block content_title %}
+<div class="header-text">Результат: {{ news_len }} постiв</div>
+{% endblock content_title %}
+
+{% block data %} 
+    <style type="text/css">
+        .selector {
+            display: flex !important;
+            justify-content: space-between;
+        }
+
+        .selector label {
+            margin: 5px 0 0;
+        }
+
+        input[type="radio"] {
+            display: none;
+        }
+
+        input[type="radio"] + label {
+            cursor: pointer;
+            padding: 8px 16px;
+            border: 1px solid #ccc;
+            border-radius: 21px;
+        }
+
+        input[type="radio"]:checked + label {
+            background-color: #007bff;
+            color: #fff;
+        }
+
+        .pagination-buttons {
+            margin: 0 auto 1.5rem;
+            padding: 4px 5px;
+            border-radius: 10px;
+            background-color: #398dd3;
+            width: fit-content;
+        }
+
+        .pagination-buttons * {
+            color: #474747;
+            font-weight: bold;
+        }
+
+        .container {
+          display: block;
+          position: relative;
+          padding-left: 35px;
+          margin-bottom: 12px;
+          cursor: pointer;
+          font-size: 22px;
+          -webkit-user-select: none;
+          -moz-user-select: none;
+          -ms-user-select: none;
+          user-select: none;
+        }
+
+        /* Hide the browser's default checkbox */
+        .container input {
+          position: absolute;
+          opacity: 0;
+          cursor: pointer;
+          height: 0;
+          width: 0;
+        }
+
+        /* Create a custom checkbox */
+        .checkmark {
+          position: absolute;
+          top: 0;
+          left: 0;
+          height: 25px;
+          width: 25px;
+          background-color: #ddd;
+        }
+
+        /* On mouse-over, add a grey background color */
+        .container:hover input ~ .checkmark {
+          background-color: #ccc;
+        }
+
+        /* When the checkbox is checked, add a blue background */
+        .container input:checked ~ .checkmark {
+          background-color: #42aafd;
+        }
+
+        /* Create the checkmark/indicator (hidden when not checked) */
+        .checkmark:after {
+          content: "";
+          position: absolute;
+          /* display: none; */
+        }
+
+        /* Show the checkmark when checked */
+        .container input:checked ~ .checkmark:after {
+          display: block;
+        }
+
+        /* Style the checkmark/indicator */
+        .container .checkmark:after {
+          left: 9px;
+          top: 5px;
+          width: 5px;
+          height: 10px;
+          border: solid white;
+          border-width: 0 3px 3px 0;
+          -webkit-transform: rotate(45deg);
+          -ms-transform: rotate(45deg);
+          transform: rotate(45deg);
+        }
+        .date-container {
+            display: block !important;
+            margin: 5px auto 0 auto;
+            width: fit-content;
+        }
+        .date-container input {
+            width: 200px;
+            padding: 4px 2px 3px;
+            font-size: 13px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            border: 1px solid #000;
+            margin-bottom: 100px;
+        }
+        th, td {
+            border: 1px solid #000;
+            text-align: center;
+            padding: 8px;
+            word-wrap: break-word;
+        }
+        th {
+            background-color: #f2f2f2
+        }
+        .id-table {
+            max-width: 200px;
+        }
+        .text-table {
+            max-width: 400px;
+        }
+        .source-table {
+            max-width: 200px;
+        }
+        .tg-table {
+            max-width: 200px;
+        }
+        .url-table {
+            max-width: 200px;
+        }
+        .time-table {
+            max-width: 200px;
+        }
+        
+        
+
+
+        @media (max-width: 600px) {
+            th {
+                display: none;
+            }
+            table, tbody, tr, td {
+                display: block;
+                width: 100%;
+            }
+            td {
+                display: flex;
+                justify-content: center;
+                align-items: flex-start;
+                flex-direction: column;
+            }
+            td::before {
+                content: attr(data-label);
+                font-weight: bold;
+                margin-bottom: 8px;
+                text-align: left;
+            }
+        }
+    </style>
+    <style type="text/css">
+        ul {
+            padding-inline-start: 0;
+        }
+        .products {
+            list-style: none;
+            margin: 0 -20px 0 0;
+            padding: 0;
+        }
+        .product-wrapper {
+            display: block;
+            width: 50%;
+            float: left;
+            transition: width .2s;
+        }
+
+        .product {
+            display: block;
+            border-radius: 3px;
+            position: relative;
+            background: #fff;
+            margin: 0 15px 19px 0;
+            text-decoration: none;
+            color: #474747;
+            z-index: 0;
+            transition: .3s;
+            min-height: 202px;
+        }
+
+        .product:hover {
+            -webkit-box-shadow: 0px 6px 31px 0px rgba(186,186,186,1);
+            -moz-box-shadow: 0px 6px 31px 0px rgba(186,186,186,1);
+            box-shadow: 0px 6px 31px 0px rgba(186,186,186,1);
+            transform: scale(1.05);
+        }
+
+
+        .product-photo img {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            max-width: 100%;
+            max-height: 100%;
+            margin: auto;
+            transition: transform .4s ease-out;
+        }
+
+
+        .product-views img {
+            width: 17px;
+            height: 15px;
+            margin-block-start: -3px;
+        }
+
+        .product .product-description {
+            position: relative;
+            margin: 0;
+            font-size: .75em;
+            line-height: 1.2em;
+            height: 18em;
+            overflow: hidden;
+            padding: 5px;
+        }
+        .product .product-description b {
+            font-size: 14px;
+        }
+
+        .product .product-description:after {
+            content: '';
+            display: inline-block;
+            position: absolute;
+            bottom: 0;
+            right: 0;
+            width: 100%;
+            height: 2em;
+            background: linear-gradient(to top, #fff, rgba(255, 255, 255, 0));
+        }
+
+        .product-photo {
+            position: relative;
+            padding-bottom: 60%;
+            overflow: hidden;
+        }
+
+
+        .product-views {
+            background-color: #398dd3;
+            padding: 1px 4px;
+            color: #474747;
+            font-weight: 700;
+        }
+
+        .product .product-views:last-of-type {
+            border-radius: 0 0 6px 0;
+        }
+
+        .product span.product-views:last-of-type {
+            border-radius: 0 0 0 6px;
+        }
+
+        .product div.product-views:last-of-type {
+            border-radius: 0 0 6px 0;
+        }
+
+        .timestamp {
+            font-size: 12px;
+            padding: 0 0 6px 5px;
+        }
+
+        .web-icon {
+            background-color: #bbbbbb;
+        }
+
+        .tg-icon {
+            background-color: #5ebee8;
+        }
+
+        @media only screen and (min-width: 768px) {
+            .product-wrapper {
+                width: 33.333%;
+            }
+        }
+
+        @media only screen and (min-width: 1000px) {
+            
+            .product {
+                min-height: calc(26px + 18em);
+            }
+            
+            .product .product-description {
+                font-size: 1em;
+                line-height: 1.4em;
+                /* height: 18em; */
+            }
+            .product-wrapper {
+                width: 25%;
+            }            
+            .product .product-description b {
+                font-size: 18px;
+            }
+        }
+        @media only screen and (min-width: 1500px) {
+            .product-wrapper {
+                width: 20%;
+            }
+        }
+        
+        @media only screen and (min-width: 1750px) {
+            .product-wrapper {
+                width: 16.6%;
+            }
+        }
+        @media only screen and (min-width: 2000px) {
+            .product-wrapper {
+                width: 12.5%;
+            }
+        }
+    </style>
+
+    <ul class="products clearfix">
+        {% for newsletter in news  %}
+        <li class="product-wrapper">
+            <a href="{% url 'panel:newsletter' %}?id={{ newsletter.id }}" class="product">
+                <div class="flex-between">
+                    {% if ":deleted" in newsletter.category %}
+                    <span class="product-views" style="opacity: 0.5;">
+                        <img src="/static/img/trash.svg">
+                    </span>
+                    {% else %}
+                        {% if "https://t.me/" not in newsletter.chat_id %}
+                            <div class="product-views web-icon" >
+                                <img src="/static/img/web.svg">
+                            </div>
+                        {% else %}
+                            <div class="product-views tg-icon" >
+                                <img src="/static/img/tg.svg">
+                            </div>
+                        {% endif %}
+                    {% endif %}
+                    
+                    {% if newsletter.views %}
+                        <span class="product-views" >
+                            <img src="/static/img/eye.svg"> {{ newsletter.views }}
+                        </span>
+                    {% endif %}
+                </div>
+                    
+        
+                <div class="product-description">
+                    {% if "http" in newsletter.photo %}
+                    <div class="product-photo">
+                        <img src="{{ newsletter.photo }}" loading="lazy" alt="">
+                    </div>
+                    {% endif %}
+                    <div class="timestamp">
+                        {{ newsletter.time }}
+                    </div>
+                    <b>{{ newsletter.source }}</b><br><br>
+                    {{ newsletter.text|slice:":300" }}
+                </div>
+            </a>
+        </li>
+        {% endfor %}
+    </ul>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        $(document).ready(function () {
+
+            var checkboxes = $(".checkbox");
+            var sources = $(".source-selector");
+
+          // Создаем объект для хранения данных
+            var categoriesObject = {};
+            var pageProperties = {
+                project:"{{ project }}",
+                category:"{{ category }}",
+                sorting:"{{ sorting }}",
+                source:"{{ source }}",
+                keyword:"{{ keyword }}",
+                dateFrom:"{{ dateFrom }}",
+                dateTo:"{{ dateTo }}",
+            }
+
+
+
+
+            $("#sortForm").on("submit", function(event){
+                event.preventDefault();
+                pageProperties.keyword = $("#keyword").val();
+                pageProperties.dateFrom = $("#dateFrom").val();
+                pageProperties.dateTo = $("#dateTo").val();
+
+                updateContent();
+            });
+            $("#downloadSortForm").on("submit", function(event){
+                event.preventDefault();
+                pageProperties.keyword = $("#keyword").val();
+                pageProperties.dateFrom = $("#dateFrom").val();
+                pageProperties.dateTo = $("#dateTo").val();
+
+                saveContent();
+            });
+
+
+          // Добавляем обработчик события change ко всем чекбоксам
+            checkboxes.on("change", function() {
+                categoriesObject = {}; // Сбрасываем объект при каждом изменении
+
+                checkboxes.each(function() {
+                    var dataId = $(this).data("id");
+                    var isChecked = $(this).prop("checked");
+
+                    if (dataId == "views-sort") { // Если изменена сортировка
+                        pageProperties.sorting = isChecked;
+                    } else if (isChecked) { // Если чекбокс отмечен, добавляем его data-id в объект
+                        categoriesObject[dataId] = true;
+                    }
+
+                });
+
+                pageProperties.category = joinCategories(categoriesObject);
+                updateContent()
+                
+            });
+
+            sources.on("change", function() {
+                sources.each(function() {
+                    if ($(this).prop("checked")) {
+                        console.log($(this).data("source"));
+                        pageProperties.source = $(this).data("source");
+                    }
+                });
+
+            });
+
+            // Пример создания payload для GET запроса на основе объекта categoriesObject
+            function joinCategories(categoriesObject) {
+                var payload = [];
+
+                for (var dataId in categoriesObject) {
+                if (categoriesObject[dataId]) {
+                    payload.push(dataId);
+                }
+                }
+
+                return payload.join("; ");
+            }
+
+            function saveContent() {
+                $.ajax({
+                    url: "/panel/get_exel/",
+                    type: "GET",
+                    data: pageProperties, 
+                    headers: { "X-CSRFToken": getCookie("csrftoken") },
+                    xhrFields: {
+                        responseType: 'blob' // Указываем, что ожидаем получить бинарные данные
+                    },
+                    success: function(data, textStatus, jqXHR) {
+                        var contentDisposition = jqXHR.getResponseHeader('Content-Disposition');
+                        var matches = /filename="([^"]+)"/.exec(contentDisposition);
+                        var fileName = matches != null && matches[1] ? matches[1] : 'file.xlsx';
+            
+                        var blob = new Blob([data], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+                        var link = document.createElement('a');
+                        link.href = window.URL.createObjectURL(blob);
+                        link.download = fileName; // Используем полученное имя файла
+                        link.click();
+                    },
+                    error: function(jqXHR, textStatus, errorThrown) {
+                        console.log(errorThrown);
+                    },
+                    complete: function(jqXHR, textStatus) {
+                        console.log(jqXHR.status);
+                    }
+                });
+            }
+            function render_new_content(element, data) {
+                let $oldElement = $(element);
+                let $newElement = $(data).find(element);
+                
+                if ($newElement.html() !== $oldElement.html()) {
+                    $oldElement.html($newElement.html());
+                }
+            }
+            function updateContent() {
+                let elements_to_update = ['ul.products.clearfix', 'div.pagination-buttons', 'div.header-text'];
+                console.log(pageProperties.category);
+                let project = "{{ project }}";
+                if (pageProperties.category !== "None") {
+                    $.ajax({
+                        url: "/panel/get_news/",
+                        type: "GET",
+                        data: pageProperties, 
+                        headers: { "X-CSRFToken": getCookie("csrftoken") },
+                        success: function(data, textStatus, jqXHR) {
+                            for (element of elements_to_update) {
+                                render_new_content(element, data);
+                            }
+                        },
+
+                        error: function(jqXHR, textStatus, errorThrown) {
+                            console.log(errorThrown);
+                        },
+
+                        complete: function(jqXHR, textStatus) {
+                            console.log(jqXHR.status);
+                        }
+                    });
+                } else {
+                    $.ajax({
+                        url: "/panel/get_news/",
+                        type: "GET",
+                        data: {project},
+                        headers: { "X-CSRFToken": getCookie("csrftoken") },
+                        success: function(data, textStatus, jqXHR) {
+
+                            for (element of elements_to_update) {
+                                render_new_content(element, data);
+                            }
+
+                        },
+                        error: function(jqXHR, textStatus, errorThrown) {
+                            console.log(errorThrown);
+                        },
+                        complete: function(jqXHR, textStatus) {
+                            console.log(jqXHR.status);
+                        }
+                    })
+                }
+
+                
+            }
+
+
+            setInterval(updateContent, 60000);
+        });
+    </script>
+{% endblock data %}
+

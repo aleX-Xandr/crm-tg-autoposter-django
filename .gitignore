@@ -6,6 +6,11 @@ __pycache__/
 # C extensions
 *.so
 
+*.session
+tg_files/
+tg_photos/
+.vscode/
+
 # Distribution / packaging
 .Python
 build/

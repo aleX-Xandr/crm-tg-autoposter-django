@@ -1,0 +1,53 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+        <meta name="description" content="">
+        <meta name="author" content="">
+        <link href="{% static 'img/favicon.png' %}" rel="shortcut icon" type="image/x-icon">
+        <link href="{% static 'img/favicon.png' %}" rel="icon" type="image/x-icon">
+        <title>Увійти у систему</title>
+        <!-- Custom fonts for this template-->
+        <link href="{% static 'css/css.css' %}" rel="stylesheet">
+        <link href="{% static 'css/index.css' %}" rel="stylesheet">
+
+        <!-- Custom styles for this template-->
+        <link href="{% static 'css/sb-admin-2.min.css' %}" rel="stylesheet">
+        <style type="text/css">
+            form.user .form-control-user {
+            font-size: 1rem;
+            border-radius: 10rem;
+            padding: 1.5rem 1.5rem;
+            }
+        </style>
+    </head>
+    <body class="bg-gradient-primary">
+        <div class="container">
+            <!-- Outer Row -->
+            <div class="row justify-content-center">
+                <div class="col-xl-5 col-lg-12 col-md-9">
+                    <div class="text-center my-5">
+                        <img src="{% static 'img/telelogo.png' %}" width="55">
+                    </div>
+                    <div class="card o-hidden border-0 shadow-lg mt-5 mb-4" style="border-radius: 1.3rem;">
+                        <div class="card-body p-0">
+                            <!-- Nested Row within Card Body -->
+                            <div class="row">
+                                <div class="col-lg-12">
+                                    <div class="p-5">
+                                        {% block content %}
+                                        {% endblock content %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </body>
+</html>

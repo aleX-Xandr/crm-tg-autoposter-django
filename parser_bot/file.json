@@ -1,0 +1,39 @@
+{
+  "-1001286657470": {
+    "Group_Name": "Новости Одесса | Одеса",
+    "Work": "True",
+    "Type": "Channel",
+    "Auto_Post": {
+      "first": "False"
+    },
+    "Invite_link": "https://t.me/our_odessa"
+  },
+  "-1002034857624": {
+    "Group_Name": "Канал ИСТОЧНИК",
+    "Work": "True",
+    "Type": "Channel",
+    "Auto_Post": {
+      "first": "True"
+    },
+    "Invite_link": "https://t.me/+PdvfdZqIreEzNGNi"
+  },
+  "-1002127306393": {
+    "Group_Name": "источник 2",
+    "Work": "True",
+    "Type": "Channel",
+    "Auto_Post": {
+      "first": "False"
+    },
+    "Invite_link": "https://t.me/+F7kSg6PBJYg3MDIy"
+  },
+  "-1002013518846": {
+    "Group_Name": "МIЙ КАНАЛ",
+    "Work": "True",
+    "Type": "Channel",
+    "Auto_Post": {
+      "first": "False"
+    },
+    "Invite_link": "https://t.me/+NsMWzlJbr_AzNGUy",
+    "flags": "ТЕСТ "
+  }
+}

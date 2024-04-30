@@ -1,0 +1,272 @@
+{% extends "adminpanel/base.html" %}
+
+{% block sideMenu %}    
+
+    {% for category in categories %}
+                <li class="nav-item my-2">
+                    <a class="nav-link" href="{% url 'panel:news' %}?category={{ category.channel }}">
+                        <span>{{ category.channel }}</span>
+                    </a>
+                </li>
+    {% endfor %}
+                
+{% endblock sideMenu %}
+
+
+{% block data %} 
+    <style type="text/css">
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            border: 1px solid #000;
+            margin-bottom: 100px;
+        }
+        th, td {
+            border: 1px solid #000;
+            text-align: center;
+            padding: 8px;
+            word-wrap: break-word;
+        }
+        th {
+            background-color: #f2f2f2
+        }
+        .id-table {
+            max-width: 200px;
+        }
+        .text-table {
+            max-width: 400px;
+        }
+        .source-table {
+            max-width: 200px;
+        }
+        .tg-table {
+            max-width: 200px;
+        }
+        .url-table {
+            max-width: 200px;
+        }
+        .time-table {
+            max-width: 200px;
+        }
+
+
+        @media (max-width: 600px) {
+            th {
+                display: none;
+            }
+            table, tbody, tr, td {
+                display: block;
+                width: 100%;
+            }
+            td {
+                display: flex;
+                justify-content: center;
+                align-items: flex-start;
+                flex-direction: column;
+            }
+            td::before {
+                content: attr(data-label);
+                font-weight: bold;
+                margin-bottom: 8px;
+                text-align: left;
+            }
+        }
+    </style>
+    <style type="text/css">
+        ul {
+            padding-inline-start: 0;
+        }
+        .products {
+            list-style: none;
+            margin: 0 -20px 0 0;
+            padding: 0;
+        }
+        .product-wrapper {
+            display: block;
+            width: 50%;
+            float: left;
+            transition: width .2s;
+        }
+
+        .product {
+            display: block;
+            border: 1px solid #b5e9a7;
+            border-radius: 3px;
+            position: relative;
+            background: #fff;
+            margin: 0 20px 20px 0;
+            text-decoration: none;
+            color: #474747;
+            z-index: 0;
+            min-height: 365px;
+            transition: .3s;
+        }
+
+        .product:hover {
+            -webkit-box-shadow: 0px 6px 31px 0px rgba(186,186,186,1);
+            -moz-box-shadow: 0px 6px 31px 0px rgba(186,186,186,1);
+            box-shadow: 0px 6px 31px 0px rgba(186,186,186,1);
+            transform: scale(1.05);
+        }
+
+        .product-photo img {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            max-width: 100%;
+            max-height: 100%;
+            margin: auto;
+            transition: transform .4s ease-out;
+        }
+
+        .product p {
+            position: relative;
+            margin: 0;
+            font-size: 1em;
+            line-height: 1.4em;
+            height: 17.6em;
+            overflow: hidden;
+            padding: 5px;
+        }
+        .product p b {
+            font-size: 18px;
+        }
+
+        .product p:after {
+            content: '';
+            display: inline-block;
+            position: absolute;
+            bottom: 0;
+            right: 0;
+            width: 9em;
+            height: 1.6em;
+            background: linear-gradient(to left top, #fff, rgba(255, 255, 255, 0));
+        }
+
+        .product-photo {
+            position: relative;
+            padding-bottom: 60%;
+            overflow: hidden;
+        }
+
+        .timestamp {
+            font-size: 12px;
+            padding: 0 0 0 5px;
+        }
+
+
+        @media only screen and (min-width: 768px) {
+            .product-wrapper {
+                width: 33.333%;
+            }
+        }
+
+        @media only screen and (min-width: 1000px) {
+            .product-wrapper {
+                width: 25%;
+            }
+            .product p {
+                height: 14.6em;
+            }
+        }
+        @media only screen and (min-width: 1500px) {
+            .product-wrapper {
+                width: 20%;
+            }
+        }
+        @media only screen and (min-width: 2000px) {
+            .product-wrapper {
+                width: 12.5%;
+            }
+        }
+    </style>
+
+    <ul class="products clearfix">
+        {% for newsletter in news  %}
+        <li class="product-wrapper">
+            <a href="{% url 'panel:newsletter' %}?id={{ newsletter.id }}" class="product">
+                {% if "http" in newsletter.photo %}
+                <div class="product-photo">
+                    <img src="{{ newsletter.photo }}" loading="lazy" alt="">
+                </div>
+                {% else %}
+                <div class="product-photo">
+                    <img src="/static/img/img.png" loading="lazy" alt="">
+                </div>
+                {% endif %}
+                <div class="timestamp">
+                    {{ newsletter.time }}
+                </div>
+                <p>
+                    <b>{{ newsletter.source }}</b><br><br>
+                    {{ newsletter.text|slice:":300" }}
+                </p>
+            </a>
+        </li>
+        {% endfor %}
+    </ul>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        $(document).ready(function () {
+            setInterval(function () {
+                let category = "{{ category }}";
+                if (category !== "None") {
+                    $.ajax({
+                        url: "/panel/get_news/",
+                        type: "GET",
+                        data: {category: category}, 
+                        headers: { "X-CSRFToken": getCookie("csrftoken") },
+                        success: function(data, textStatus, jqXHR) {
+                            var $newProductsList = $(data).find('ul.products.clearfix');
+                            var $currentProductsList = $('ul.products.clearfix');
+                            console.log($newProductsList.html() !== $currentProductsList.html());
+                            if ($newProductsList.html() !== $currentProductsList.html()) {
+                              
+                              $currentProductsList.html($newProductsList.html());
+                            }
+                            // console.log(data);
+                        },
+
+                        error: function(jqXHR, textStatus, errorThrown) {
+                            console.log(errorThrown);
+                        },
+
+                        complete: function(jqXHR, textStatus) {
+                            console.log(jqXHR.status);
+                        }
+                    })
+                } else {
+                    $.ajax({
+                        url: "/panel/get_news/",
+                        type: "GET",
+                        headers: { "X-CSRFToken": getCookie("csrftoken") },
+                        success: function(data, textStatus, jqXHR) {
+                            var $newProductsList = $(data).find('ul.products.clearfix');
+                            var $currentProductsList = $('ul.products.clearfix');
+                            console.log($newProductsList.html() !== $currentProductsList.html());
+                            if ($newProductsList.html() !== $currentProductsList.html()) {
+                              
+                              $currentProductsList.html($newProductsList.html());
+                            }
+                            // console.log(data);
+                        },
+
+                        error: function(jqXHR, textStatus, errorThrown) {
+                            console.log(errorThrown);
+                        },
+
+                        complete: function(jqXHR, textStatus) {
+                            console.log(jqXHR.status);
+                        }
+                    })
+                }
+
+                
+            }, 10000);
+        });
+    </script>
+{% endblock data %}
+

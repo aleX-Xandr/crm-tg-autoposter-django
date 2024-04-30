@@ -1,0 +1,319 @@
+{% extends "superadminpanel/base.html" %}
+
+{% block sideMenu %}    
+
+{% endblock sideMenu %}
+
+{% block data %} 
+    <style type="text/css">
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            border: 1px solid #000;
+        }
+        th, td {
+            border: 1px solid #000;
+            text-align: center;
+            padding: 8px
+        }
+        th {
+            background-color: #f2f2f2
+        }
+        .container-fluid {
+            margin-bottom: 100px;
+        }
+        .spanBtn {
+            color: #ffffff;
+            border-radius: 17px;
+            background: #9dd5ff;
+            padding: 9px 8px 8px 9px;
+            transition: .3s;
+        }
+        .adaptive-flex {
+            display: flex;
+            flex-direction: row;
+        }
+
+        .adaptive-flex div {
+            text-align: center;
+            margin: 20px auto;
+        }
+        .spanBtn:hover{
+            -webkit-box-shadow: 0px 6px 31px 0px rgba(186,186,186,1);
+            -moz-box-shadow: 0px 6px 31px 0px rgba(186,186,186,1);
+            box-shadow: 0px 6px 31px 0px rgba(186,186,186,1);
+            transform: scale(1.05);
+            background: #2c8cd5;
+        }
+        .project-item {
+            width: auto !important;
+            transition: .3s;
+        }
+        .checkbox-enabled {
+            background-color: #00cc33 !important;
+        }
+
+        .checkbox-disabled {
+            background-color: #cc3300 !important;
+        }
+
+        @media (max-width: 1100px) {
+            .adaptive-flex {
+                flex-direction: column;
+            }
+        }
+        @media (max-width: 600px) {
+
+            th {
+                display: none;
+            }
+            table, tbody, tr, td {
+                display: block;
+                width: 100%;
+            }
+            td {
+                display: flex;
+                justify-content: center;
+                align-items: flex-start;
+                flex-direction: column;
+            }
+            td::before {
+                content: attr(data-label);
+                font-weight: bold;
+                margin-bottom: 8px;
+                text-align: left;
+            }
+        }
+    </style>
+    <table>
+        <thead>
+            <tr>
+                <th>Id</th>
+                <th>Логiн</th>
+                <th>Пароль</th>
+                <th>Права</th>
+                <th>Комент</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td class="id-table" data-label="Id">
+                    {{ user.id }}
+                </td>
+
+                <td class="text-table" data-label="Логiн">{{ user.login }}</td>
+                <td class="source-table" data-label="Пароль">{{ user.password }}</td>
+
+                <td class="tg-table" data-label="Права">
+                    {{ user.rights }}
+                </td>
+
+                <td class="url-table" data-label="Комент">
+                    {{ user.comment }}
+                </td>
+            </tr>
+        </tbody>
+    </table>
+
+    <div class="adaptive-flex">
+        <div id="editUser">
+            <span class="spanBtn">Відредагувати аккаунт</span>
+        </div>
+        <div id="editPass">
+            <span class="spanBtn">Відредагувати пароль</span>
+        </div>
+        <div id="deleteUser">
+            <span class="spanBtn" style="background: #e04d42;">Видалити аккаунт</span>
+        </div>
+    </div>
+
+    <form id="userForm" class="siteForm">
+        <p>Виберiть проекти до яких юзер матиме доступ</p>
+        <div>
+            <div class="flex-editor">
+                {% for project in projects %}
+                    <div class="{% if project.access in user.rights %}checkbox-enabled{% else %}checkbox-disabled{% endif %} project-item" data-project="{{ project.access }}">
+                        {{project.name}}
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+        <div>
+            <textarea id="textarea_field" rows="4" cols="50" style="max-width: 100%">{{ user.comment }}</textarea>
+        </div>
+        <div>
+            <div class="flex-editor">
+                <button type="submit">Відредагувати</button>
+                <button id="cancel">Скасувати</button>
+                
+            </div>
+        </div>
+    </form>
+
+    <form id="passForm" class="siteForm">
+        <p>Введiть новий пароль</p>
+        <div>
+            <textarea id="pass_field" rows="4" cols="50" style="max-width: 100%"></textarea>
+        </div>
+        <div>
+            <div class="flex-editor">
+                <button type="submit">Змінити пароль</button>
+                <button id="cancel2">Скасувати</button>
+            </div>
+        </div>
+    </form>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        $(document).ready(function(){
+
+            let format_text = (tag) => {
+                let control = $('#textarea_field')[0];
+                let text = $(control).val();
+                if (control.selectionStart != control.selectionEnd) {
+                    let firstTag;
+                    if (tag == "a") {
+                        firstTag = `<${tag} href="ПОСИЛАННЯ">`;
+                    } else {
+                        firstTag = `<${tag}>`;
+                    }
+                    let secondTag = `</${tag}>`;
+                    let first_part = text.substring(0, control.selectionStart);
+                    let selected_part = text.substring(control.selectionStart, control.selectionEnd);
+                    let last_part = text.substring(control.selectionEnd, text.length);
+                    if (first_part.endsWith(firstTag) && last_part.startsWith(secondTag)) {
+                        first_part = text.substring(0, control.selectionStart - firstTag.length);
+                        last_part = text.substring(control.selectionEnd + secondTag.length, text.length);
+                        $('#textarea_field').val(`${first_part}${selected_part}${last_part}`);
+                    } else if (selected_part.startsWith(firstTag) && selected_part.endsWith(secondTag)) {
+                        selected_part = text.substring(control.selectionStart + firstTag.length, control.selectionEnd - secondTag.length);
+                        $('#textarea_field').val(`${first_part}${selected_part}${last_part}`);
+                    } else {
+                        $('#textarea_field').val(`${first_part}${firstTag}${selected_part}${secondTag}${last_part}`);
+                    }
+                }
+            }
+
+            $("#mediaContainer").on("click", ".flex-editor.image .delete", function() {
+                $(this).closest(".flex-editor.image").remove();
+            });
+
+            $("#editUser").click(function(){
+                $("#passForm").css("display", "none");
+                $("#userForm").css("display", "block");
+            });
+            $("#editPass").click(function(){
+                $("#userForm").css("display", "none");
+                $("#passForm").css("display", "block");
+            });
+
+            $(".project-item").click(function(){
+                if ($(this).hasClass("checkbox-enabled")) {
+                    $(this).addClass("checkbox-disabled");
+                    $(this).removeClass("checkbox-enabled");
+                } else {
+                    $(this).addClass("checkbox-enabled");
+                    $(this).removeClass("checkbox-disabled");
+                }
+            });
+
+            $("#cancel").click(function(){
+                event.preventDefault();
+                $("#userForm").css("display", "none");
+                $('#textarea_field').val($(".text-table").html());
+            });
+            $("#cancel2").click(function(){
+                event.preventDefault();
+                $("#passForm").css("display", "none");
+                $('#pass_field').val("");
+            });
+
+            
+            $("#userForm").on("submit", function(event){
+                event.preventDefault();
+                let text = $("#textarea_field").val();
+                let id = "{{ user.id }}";
+                let access = "";
+                $(".checkbox-enabled").each(function() {
+                    if (access) {
+                        access += ","+$(this).data("project");
+                    } else {
+                        access = $(this).data("project");
+                    }
+                });
+                console.log(access);
+                $.ajax({
+                    url: "/superpanel/edit_user/",
+                    type: "POST",
+                    data: {id, text, access},
+                    headers: { "X-CSRFToken": getCookie("csrftoken") },
+                    success: function(data, textStatus, jqXHR) {
+                        alert("Запит на редагування надіслано успішно!");
+                    },
+
+                    error: function(jqXHR, textStatus, errorThrown) {
+                        alert("Запит на редагування надіслано з помилкою!");
+                    },
+
+                    complete: function(jqXHR, textStatus) {
+                        console.log(jqXHR.status);
+                        location.reload();
+                    }
+                })
+            });
+
+            $("#passForm").on("submit", function(event){
+                event.preventDefault();
+                let password = $("#pass_field").val();
+                if (password.length < 8) {
+                    alert("Пароль повинен містити як мінімум 8 символів!");
+                } else {
+                    let login = "{{ user.login }}";
+                    $.ajax({
+                        url: "/auth/edit/",
+                        type: "POST",
+                        data: {login, password},
+                        headers: { "X-CSRFToken": getCookie("csrftoken") },
+                        success: function(data, textStatus, jqXHR) {
+                            alert("Запит на редагування надіслано успішно!");
+                        },
+
+                        error: function(jqXHR, textStatus, errorThrown) {
+                            alert("Запит на редагування надіслано з помилкою!");
+                        },
+
+                        complete: function(jqXHR, textStatus) {
+                            console.log(jqXHR.status);
+                            location.reload();
+                        }
+                    })
+                }
+            });
+
+
+            $("#deleteUser").click(function(){
+                let login = "{{ user.login }}";
+                // let login = "{{ user.login }}";
+                $.ajax({
+                    url: "/auth/delete/",
+                    type: "POST",
+                    data: {login}, 
+                    headers: { "X-CSRFToken": getCookie("csrftoken") },
+                    success: function(data, textStatus, jqXHR) {
+                        alert("Запит на видалення надіслано успішно!");
+                        window.location.href = "{% url 'superpanel:users' %}";
+
+                    },
+
+                    error: function(jqXHR, textStatus, errorThrown) {
+                        alert("Запит на видалення надіслано з помилкою!");
+                    },
+
+                    complete: function(jqXHR, textStatus) {
+                        console.log(jqXHR.status);
+                    }
+                })
+            });
+        });
+    </script>
+{% endblock data %}

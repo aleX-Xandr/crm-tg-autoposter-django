@@ -1,0 +1,91 @@
+{% extends "adminpanel/base.html" %}
+
+{% block sideMenu %}
+
+{% for category in categories %}
+  <li class="nav-item my-2">
+    <label class="container" style="margin: 0;">
+      <input class="checkbox" type="checkbox" data-id="{{ category.channel }}" data-name="{{ category.name }}">
+      <span class="checkmark"  style="margin: 0;"></span>
+    </label>
+    <span style="margin-left: 28px;">{{ category.name }}</span>
+  </li>
+{% endfor %}
+
+{% endblock sideMenu %}
+
+{% block data %}
+
+<div id="time-input-container">
+  <label for="startTime">Start Time:</label>
+  <input type="datetime-local" id="startTime">
+  <label for="endTime">End Time:</label>
+  <input type="datetime-local" id="endTime">
+</div>
+
+
+<h2>Выберите информационные ресурсы:</h2>
+<div class="information-resources">
+  <ul>
+    {% for resource in informations_resurs %}
+      {% if resource.Type == 'Channel' %}
+        <li>
+          <label class="container" style="margin: 0;">
+            <span> {{ resource.Group_Name }}</span>
+            <input class="checkbox" type="checkbox" data-id="{{ resource.Id }}">
+            <span class="checkmark"  style="margin: 0;"></span>
+          </label>
+
+        </li>
+      {% elif resource.Type == 'Site' %}
+        <li class="site">
+          <a href="{{ resource.url }}">{{ resource.name }}</a>
+        </li>
+      {% endif %}
+    {% endfor %}
+  </ul>
+</div>
+
+<button id="download-xlsx">СКАЧАТИ НОВИНИ</button>
+
+<script>
+const checkboxes = document.querySelectorAll('.checkbox');
+const startTimeInput = document.getElementById('startTime');
+const endTimeInput = document.getElementById('endTime');
+const downloadButton = document.getElementById('download-xlsx');
+
+downloadButton.addEventListener('click', () => {
+  const selectedChannels = [];
+  for (const checkbox of checkboxes) {
+    if (checkbox.checked) {
+      selectedChannels.push({
+        id: checkbox.dataset.id,
+        name: checkbox.dataset.name,
+      });
+    }
+  }
+
+  const startTime = startTimeInput.value;
+  const endTime = endTimeInput.value;
+
+  const url = `/download_xlsx/?channels=${JSON.stringify(selectedChannels)}&start_time=${startTime}&end_time=${endTime}`;
+
+  fetch(url, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(selectedChannels),
+  })
+    .then(response => {
+      if (response.ok) {
+        console.log('XLSX-файл успешно скачан!');
+      } else {
+        console.error('Ошибка при скачивании XLSX-файла:', response.statusText);
+        alert('При скачивании XLSX-файла произошла ошибка. Пожалуйста, повторите попытку.');
+      }
+    });
+});
+</script>
+
+{% endblock data %}

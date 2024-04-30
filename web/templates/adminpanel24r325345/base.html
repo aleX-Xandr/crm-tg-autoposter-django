@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+{% load static %}
+{% load custom_tags %}
+
+<html lang="en">
+    <head>
+        <base>
+        <meta charset="UTF-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+        <meta name="description" content="">
+        <meta name="author" content="">
+        <link href="{% static 'img/favicon.png' %}" rel="shortcut icon" type="image/x-icon">
+        <link href="{% static 'img/favicon.png' %}" rel="icon" type="image/x-icon">
+        <title>Панель керування</title>
+        <!-- Custom fonts for this template-->
+        <link href="{% static 'css/css.css' %}" rel="stylesheet">
+        <link href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i" rel="stylesheet">
+        <!-- Custom styles for this template-->
+        <link href="{% static 'css/sb-admin-2.min.css' %}" rel="stylesheet">
+        <link rel="stylesheet" href="{% static 'css/index.css' %}">
+        <script>
+            function getCookie(name) {
+              let matches = document.cookie.match(new RegExp(
+                "(?:^|; )" + name.replace(/([\.$?*|{}\(\)\[\]\\\/\+^])/g, '\\$1') + "=([^;]*)"
+              ));
+              return matches ? decodeURIComponent(matches[1]) : undefined;
+            }
+            function setCookie(name, value, options = {}) {
+              options = {
+                path: '/',
+                ...options
+              };
+
+              if (options.expires instanceof Date) {
+                options.expires = options.expires.toUTCString();
+              }
+
+              let updatedCookie = encodeURIComponent(name) + "=" + encodeURIComponent(value);
+
+              for (let optionKey in options) {
+                updatedCookie += "; " + optionKey;
+                let optionValue = options[optionKey];
+                if (optionValue !== true) {
+                  updatedCookie += "=" + optionValue;
+                }
+              }
+
+              document.cookie = updatedCookie;
+            }
+        </script>
+        <style>
+            .status-inactive {
+                color: #e74a3b;
+            }
+
+            .status-active {
+                color: #1cc88a;
+            }
+        </style>
+        <style>
+            svg {
+                width: 17px;
+                margin-right: 5px;
+            }
+
+            input.disabled {
+                display: none;
+            }
+
+            .table-responsive {
+                overflow-x: hidden;
+            }
+
+            .control-column {
+                width: 24px;
+            }
+
+            .siteForm {
+                display: none;
+                background-color: #ffffff;
+                border-radius: 15px;
+                padding: 5px 25px;
+                margin: 10px auto 10px auto;
+                width: fit-content;
+            }
+
+            .siteForm button {
+                margin: 20px 10px 10px;
+                display: block;
+                padding: 7px;
+                border-radius: 22px;
+                border: 1px solid #aaaaaa;
+            }
+
+            .siteForm > div {
+                display: grid;
+                place-items: center;
+            }
+
+            .siteForm input {
+                padding: 7px;
+                border-radius: 22px;
+                border: 1px solid #aaaaaa;
+                max-width: 100%;
+            }
+            .flex-editor.image {
+                border: 1px solid #000000;
+                border-radius: 13px;
+                padding: 1px 2px 0 3px;
+                margin: 5px auto 5px auto;
+            }
+            @media only screen and (max-width: 1000px) {
+                .table-responsive {
+                    overflow-x: auto;
+                }
+            }
+            .ui-sortable-handle.odd:hover {
+                background-color: #f2f2f2;
+            }
+
+            .bot-active {
+                border-bottom: 3px solid #2c8cd5;
+            }
+        </style>
+        {% block end_header %} {% endblock end_header %}
+    </head>
+    <body id="page-top">
+        <!-- Page Wrapper -->
+        <div id="wrapper" class="{% if request.COOKIES.toggled_bar != 'true' %} 
+                                    toggled-width 
+                                {% endif %}">
+            <ul class="navbar-nav bg-gradient-primary sidebar sidebar-dark accordion 
+                    {% if request.COOKIES.toggled_bar == 'true' %} 
+                        toggled 
+                    {% endif %}" 
+                id="accordionSidebar" 
+                style="z-index: 13">
+                <!-- Sidebar - Brand -->
+                <a class="sidebar-brand d-flex align-items-center justify-content-center" href="{% url 'panel:dashboard' %}">
+                    <div class="sidebar-brand-icon mt-4">
+                        <img src="{% static 'img/telelogo.png' %}" id="logo" height="35">
+                    </div>
+                </a>
+                <!-- Divider -->
+                <!-- Nav Item - Dashboard -->
+                <li class="nav-item my-2" style="border: none; border-top: 2px dotted #fff;">
+                    <a class="nav-link" href="{% url 'panel:channels' %}">
+                        <span>Список каналів</span>
+                    </a>
+                </li>
+                <li class="nav-item my-2">
+                    <a class="nav-link" href="{% url 'panel:sites' %}">
+                        <span>Список сайтів</span>
+                    </a>
+                </li>
+                <li class="nav-item my-2" style="border: none; border-bottom: 2px dotted #fff;">
+                    <a class="nav-link" href="{% url 'panel:news' %}">
+                        <span>Список новин</span>
+                    </a>
+                </li>
+                {% block sideMenu %} {% endblock sideMenu %}
+                
+            </ul>
+            <!-- Content Wrapper -->
+            <div id="content-wrapper" class="d-flex flex-column">
+                <!-- Main Content -->
+                <div id="content">
+                    <nav class="navbar navbar-expand navbar-light bg-transparent topbar mb-4 static-top">
+                        <button id="sidebarToggleTop" class="btn btn-link d-md-none rounded-circle px-2">
+                            <i class="fa fa-bars" style="font-size: 19px;"></i>
+                        </button>
+                        <ul class="navbar-nav ml-auto">
+                            <li class="nav-item dropdown no-arrow show">
+                                <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
+                                <span class="mr-2 text-gray-800 font-weight-bold normal">
+                                    {{ request.user.username }}
+                                </span>
+                                <img class="img-profile rounded-circle" src="{% static 'img/noavatar.png' %}">
+                                </a>
+                                <!-- Dropdown - User Information -->
+                                <div id="userDropdownMenu" class="dropdown-menu dropdown-menu-right shadow animated--grow-in" aria-labelledby="userDropdown">
+                                    <a class="dropdown-item" href="{% url 'accounts:logout' %}" data-toggle="modal" data-target="#logoutModal">
+                                        <i class="fas fa-sign-out-alt fa-sm fa-fw mr-2 text-gray-400"></i>
+                                        Вийти
+                                    </a>
+                                </div>
+                            </li>
+                        </ul>
+                    </nav>
+                    <!-- Begin Page Content -->
+                    <div class="container-fluid">
+                        <!-- DataTales Example -->
+                            {% block data %} {% endblock data %}
+                    </div>
+                    <!-- /.container-fluid -->
+                </div>
+                <!-- End of Main Content -->
+            </div>
+            <!-- End of Content Wrapper -->
+        </div>
+        <!-- End of Page Wrapper -->
+        <!-- Scroll to Top Button-->
+        <a class="scroll-to-top rounded" href="https://tbiz.pro/#page-top">
+        <i class="fas fa-angle-up"></i>
+        </a>
+        <!-- Logout Modal-->
+        <div class="msg-result"></div>
+        <style type="text/css">
+            #cover {
+            background-image: url("83afec4a2112b30.jpg");
+            background-repeat: no-repeat;
+            background-position: center;
+            background-size:cover;height: 120px;border:1px solid #009dda;border-radius:6px;display: block;
+            }
+        </style>
+	<script src="https://kit.fontawesome.com/f5a0d45f13.js" crossorigin="anonymous"></script>
+        <script>
+            document.querySelector("#userDropdown").onclick = function () {
+                document.querySelector("#userDropdownMenu").classList.toggle("show");
+            }
+            
+            document.querySelector("#sidebarToggleTop").onclick = function() {
+                document.querySelector("#accordionSidebar").classList.toggle("toggled");
+                
+                if (getCookie('toggled_bar') == 'false') {
+                    setCookie('toggled_bar', 'true');
+                }
+                else if (getCookie('toggled_bar') == 'true') {
+                    setCookie('toggled_bar', 'false');
+                }
+                else {
+                    setCookie('toggled_bar', 'false');
+                }
+            }
+
+            document.querySelector("#productsSections").onclick = function() {
+                document.querySelector("#productsSections").classList.toggle("collapsed");
+                document.querySelector("#collapseTwoProduct").classList.toggle("show");
+            }
+
+            document.querySelector("#settingSections").onclick = function() {
+                document.querySelector("#settingSections").classList.toggle("collapsed");
+                document.querySelector("#collapseTwoSetting").classList.toggle("show");
+            }
+
+            document.querySelector("#purchasedsSections").onclick = function() {
+                document.querySelector("#purchasedsSections").classList.toggle("collapsed");
+                document.querySelector("#collapseTwoPurchaseds").classList.toggle("show");
+            }
+
+            document.querySelector("#purchasedsSections").onclick = function() {
+                document.querySelector("#purchasedsSections").classList.toggle("collapsed");
+                    document.querySelector("#collapseTwoPurchaseds").classList.toggle("show");
+            }
+        </script>
+        <script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.mask/1.14.16/jquery.mask.js" integrity="sha256-yE5LLp5HSQ/z+hJeCqkz9hdjNkk1jaiGG0tDCraumnA=" crossorigin="anonymous"></script>
+        
+        {% block end_html %} {% endblock end_html %}
+    </body>
+</html>
