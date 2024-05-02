@@ -123,10 +123,10 @@ async def handle_task():
             except Exception as e:
                 print(e)
 ###################################################
-        # await asyncio.sleep(5)        #   DELAY   #
+        await asyncio.sleep(5)        #   DELAY   #
 ###################################################
         try:
-            with open("parser_bot\posts_to_send.json", encoding="utf8") as f: 
+            with open("posts_to_send.json", encoding="utf8") as f: 
                 data = json.load(f)
             if "new" not in data:
                 continue
@@ -195,15 +195,11 @@ async def handle_task():
             print(e)
 
 
-async def main():
-    # loop = asyncio.get_event_loop()
-    # loop.create_task(handle_task())
-    # await asyncio.sleep(10000)
-    await web_socket.connect()
-
 if __name__ == "__main__":
-    asyncio.run(main())
-    # client.start()
+    loop = asyncio.get_event_loop()
+    # loop.create_task(web_socket.connect())
+    loop.create_task(handle_task())
+    client.start()
     # executor.start_polling(dp)
-    # client.run_until_disconnected()
+    client.run_until_disconnected()
 
