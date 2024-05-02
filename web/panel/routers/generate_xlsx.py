@@ -92,9 +92,9 @@ class GenerateExel(Exel):
         if not news_list:
             sheet.append(["Новостей нету"])
             return
-        sheet.append(["Дата публікації", "Назва ресурсу", "Посилання", "Короткий зміст"])
+        sheet.append(["Дата публікації", "Назва ресурсу", "Посилання", "Короткий зміст","Ccылка на фото"])
         for news in news_list:
-            sheet.append([news.time.strftime("%d-%m-%Y %H:%M:%S"), news.channel, news.chat_id, news.text.replace("None","") if news.text else "Текст по ссылке"])
+            sheet.append([news.time.strftime("%d-%m-%Y %H:%M:%S"), news.channel, news.chat_id, news.text.replace("None","") if news.text else "Текст по ссылке", news.photo if news.photo else "Нету фото" ])
 
 
 

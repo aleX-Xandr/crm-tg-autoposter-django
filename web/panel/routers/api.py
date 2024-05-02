@@ -1,4 +1,6 @@
 from abc import ABC, abstractmethod
+from channels.layers import get_channel_layer
+from asgiref.sync import async_to_sync
 from datetime import datetime
 from django.conf import settings
 from django.core.serializers import serialize
@@ -96,6 +98,13 @@ class SendPost(BaseBotAPI):
                 datetime.now().strftime('%Y-%m-%dT%H:%M')
             ),
         }
+
+        data = {
+            "type": "send_post",
+            "send_post": payload
+        }
+        async_to_sync(get_channel_layer().group_send)("websocket", data)
+
         return send_post(payload)
 
 class UploadMedia(BaseAPI):

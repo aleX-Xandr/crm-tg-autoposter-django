@@ -2,7 +2,8 @@
 import json
 api_hash = "a7f5b1dbe83336753cbc8213e37ad6f1"
 api_id   = 27835888
-Token_bot = "6413913546:AAGrB_f8axg5yOIAqI6mljBSdQ_aL6jEWrU"
+TOKEN_BOT = "7144406361:AAEuAAjPhFLTK3Yc9NVodoyOHRxFsSgkQl0"
+
 OWNER_ID = 6864232030
 ADMINS = [OWNER_ID]
 PROJECT = "first"
@@ -21,7 +22,7 @@ def get_channels_info(channel="all"):
 		return data[channel]
 	return None
 def get_projects_info(project="all"):
-	with open('../web/superpanel/projects.json', encoding='utf8') as f: 
+	with open('web/superpanel/projects.json', encoding='utf8') as f: 
 		projects = json.load(f) 
 	if project == "all":
 		return projects

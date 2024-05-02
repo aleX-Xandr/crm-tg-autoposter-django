@@ -13,6 +13,8 @@ class WebSocket(AsyncWebsocketConsumer):
         print(close_code)
         pass
 
+    async def send_post(self, event):
+        await self.send(text_data=str(event['send_post']))
 
     async def add_site(self, event):
         await self.send(text_data=str(event['site_info']))
